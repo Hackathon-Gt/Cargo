@@ -1,0 +1,82 @@
+```sql
+CREATE DATABASE IF NOT EXISTS SpaceInventory;
+USE SpaceInventory;
+
+-- Users Table (Astronauts, Admins)
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    role ENUM('Astronaut', 'Admin') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Storage Modules Table
+CREATE TABLE Modules (
+    module_id INT AUTO_INCREMENT PRIMARY KEY,
+    module_name VARCHAR(50) UNIQUE NOT NULL,
+    capacity INT NOT NULL, -- Maximum storage capacity
+    current_usage INT DEFAULT 0 -- Tracks used capacity
+);
+
+-- Items Table
+CREATE TABLE Items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    priority ENUM('High', 'Medium', 'Low') NOT NULL,
+    expiry_date DATE,
+    weight FLOAT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Stock Table (Tracks where items are stored)
+CREATE TABLE Stock (
+    stock_id INT AUTO_INCREMENT PRIMARY KEY,
+    item_id INT,
+    module_id INT,
+    quantity INT NOT NULL,
+    position VARCHAR(50), -- Storage position within module
+    stored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (item_id) REFERENCES Items(item_id) ON DELETE CASCADE,
+    FOREIGN KEY (module_id) REFERENCES Modules(module_id) ON DELETE CASCADE
+);
+
+-- Retrieval Logs Table
+CREATE TABLE RetrievalLogs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    item_id INT,
+    module_id INT,
+    retrieved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    new_location VARCHAR(50), -- If astronaut places it elsewhere
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (item_id) REFERENCES Items(item_id),
+    FOREIGN KEY (module_id) REFERENCES Modules(module_id)
+);
+
+-- Waste Management Table
+CREATE TABLE Waste (
+    waste_id INT AUTO_INCREMENT PRIMARY KEY,
+    item_id INT,
+    module_id INT,
+    disposed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (item_id) REFERENCES Items(item_id),
+    FOREIGN KEY (module_id) REFERENCES Modules(module_id)
+);
+
+-- Undocking Manifest Table (For disposal planning)
+CREATE TABLE UndockingManifest (
+    manifest_id INT AUTO_INCREMENT PRIMARY KEY,
+    item_id INT,
+    weight FLOAT NOT NULL,
+    undocking_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (item_id) REFERENCES Items(item_id)
+);
+
+-- Simulation Table (For Time Simulation)
+CREATE TABLE SimulationLog (
+    sim_id INT AUTO_INCREMENT PRIMARY KEY,
+    simulated_days INT NOT NULL,
+    sim_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
